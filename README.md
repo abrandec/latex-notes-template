@@ -34,4 +34,4 @@ $ ./build-notes.py -clean
 ```
 
 ## License
-[MIT](https://github.com/abrandec/web_crawler/blob/main/MIT-LICENSE.txt)
+[MIT](https://github.com/abrandec/latex-notes-template/blob/main/MIT-LICENSE.txt)
