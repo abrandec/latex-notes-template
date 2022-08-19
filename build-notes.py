@@ -58,15 +58,22 @@ def main(argv) -> None:
     """
     note = ''
     try:
-        opts, _ = getopt.getopt(argv,"hn:",["note="])
+        opts, _ = getopt.getopt(argv, "h:c:n:", ["help", "clean", "note="])
     except getopt.GetoptError:
         print('build-notes.py -n <note>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print('build-notes.py -n <note>')
+            print('clean the build dir: build-notes.py -clean')
             print('build all notes: build-notes.py -n all')
             sys.exit()
+        elif opt in ("-c", "--clean"):
+            if os.path.exists(f'build'):
+                subprocess.call('rm -r build', shell=True)
+                print("path: build removed")
+            else:
+                print("path: build does not exist")
         elif opt in ("-n", "--note"):
             note = arg
     if note == 'all':
@@ -74,10 +81,10 @@ def main(argv) -> None:
         for note in my_list:
             build_notes(note)
             clean_build(note)
-    else:
+    elif note != '':
         build_notes(note)
         clean_build(note)
-    print("Notes built.")
+        print("Notes built.")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

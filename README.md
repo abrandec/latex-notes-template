@@ -3,9 +3,9 @@
 This is a template for creating LaTex notes.
 
 ## Dependencies
-[Python 3.10](https://www.python.org/downloads/release/python-3100/)
-[pdflatex](https://pypi.org/project/pdflatex/)
-[latexmk](https://ctan.org/pkg/latexmk/)
+- [Python 3.10](https://www.python.org/downloads/release/python-3100/)
+- [pdflatex](https://pypi.org/project/pdflatex/)
+- [latexmk](https://ctan.org/pkg/latexmk/)
 
 ## Getting Started
 ```
@@ -26,6 +26,11 @@ $ ./build-notes.py -note NOTE_NAME
 
 # Compiling all notes in the src directory
 $ ./build-notes.py -note all
+```
+
+## Cleaning Build Directory
+```
+$ ./build-notes.py -clean
 ```
 
 ## License
