@@ -9,15 +9,17 @@ def gen_preamble(note) -> None:
     :param note: str
     :return: None
     """
+    title = ''
     author = ''
-    author_latex = '\n\\author '
+    title_latex = r'\n\\title'
+    author_latex = '\n\n\\author'
     if os.path.exists('.cfg'):
         with open('.cfg', 'r') as f:
-            for line in f:
-                author = re.search('(?<=Author: ).*(?=)', line).group(0)
-                if author != '':
-                    author_latex = author_latex + '{' + author + '}' + '\n'
-                    break
+            file = f.read()
+            title = re.search('(?<=Title: ).*(?=)', file).group(0)
+            author = re.search('(?<=Author: ).*(?=)', file).group(0)
+            title_latex = 'makeatother' + title_latex + '{' + title + '}'
+            author_latex = author_latex + '{' + author + '}' + '\n' 
     else:
         print("No .cfg file found.")
         sys.exit()
@@ -27,6 +29,17 @@ def gen_preamble(note) -> None:
     subprocess.call(f"cp lib/preamble.tex {note_dir}/preamble.tex", shell=True)
     with open(f"{note_dir}/preamble.tex", 'a') as f:
         f.write(f"{author_latex}")
+    if not os.path.exists(f"{note_dir}/main.tex"):
+        print(f"{note_dir}/main.tex not found.")
+        sys.exit()
+    if os.path.exists(f"{note_dir}/main_temp.tex"):
+        subprocess.call(f"rm {note_dir}/main_temp.tex", shell=True)
+    subprocess.call(f"cp {note_dir}/main.tex {note_dir}/main_temp.tex", shell=True)
+    with open(f"{note_dir}/main_temp.tex", 'r') as f:
+        file = f.read()
+        file = re.sub('(?:makeatother)', title_latex, file)
+    with open(f"{note_dir}/main_temp.tex", 'w') as f:
+        f.write(file)
 
 def __build_notes(note) -> None:
     """
@@ -37,16 +50,16 @@ def __build_notes(note) -> None:
     """
     note_dir = os.path.join('./src', note)
     # Build the note.
-    subprocess.call('pdflatex main.tex', shell=True, cwd=note_dir) 
+    subprocess.call('pdflatex main_temp.tex', shell=True, cwd=note_dir) 
     # Move the pdf to the build directory
-    if os.path.exists(os.path.join(note_dir, 'main.pdf')):     
+    if os.path.exists(os.path.join(note_dir, 'main_temp.pdf')):     
         if not os.path.exists(f'./build/{note}'):
             os.makedirs(f'./build/{note}')
         if os.path.exists(f'./build/{note}.pdf'):
            subprocess.call(f'rm ./build/{note}.pdf', shell=True)
-        subprocess.call(f'mv main.pdf ../../build/{note}', shell=True, cwd=note_dir)
+        subprocess.call(f'mv main_temp.pdf ../../build/{note}', shell=True, cwd=note_dir)
         # Rename the pdf to the note name.
-        subprocess.call(f'mv build/{note}/main.pdf build/{note}/{note}.pdf', shell=True)
+        subprocess.call(f'mv build/{note}/main_temp.pdf build/{note}/{note}.pdf', shell=True)
     
 def build_notes(note) -> None:
     """
@@ -68,7 +81,8 @@ def clean_src(note) -> None:
     """
     note_dir = os.path.join('./src', note)
     subprocess.call(f'rm -f *.dvi *.ptc *.log *.aux *.toc *.out', shell=True, cwd=note_dir)
-    subprocess.call(f'rm preamble.tex', shell=True, cwd=note_dir)
+    subprocess.call(f'rm -f preamble.tex', shell=True, cwd=note_dir)
+    subprocess.call(f'rm -f main_temp.tex', shell=True, cwd=note_dir)
 
 def main(argv) -> None:
     """
