@@ -12,8 +12,7 @@ def __build_notes(note) -> None:
     """
     note_dir = os.path.join('./src', note)
     # Build the note.
-    subprocess.call('pdflatex master.tex', shell=True, cwd=note_dir)
-    
+    subprocess.call('pdflatex master.tex', shell=True, cwd=note_dir) 
     # Move the pdf to the build directory
     if os.path.exists(os.path.join(note_dir, 'master.pdf')):
         
