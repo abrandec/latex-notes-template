@@ -35,7 +35,7 @@ def build_notes(note) -> None:
     __build_notes(note)
     __build_notes(note)
 
-def clean_build(note) -> None:
+def clean_src(note) -> None:
     """
     Clean the build directory.
     :param note: The note to clean.
@@ -43,11 +43,7 @@ def clean_build(note) -> None:
     :return: None
     """
     note_dir = os.path.join('./src', note)
-    subprocess.call('latexmk -c', shell=True, cwd=note_dir)
-    files_to_remove = ('*.dvi', '*.ptc', '*.log')
-    for f in os.listdir(note_dir):
-        if f.endswith(files_to_remove):
-            subprocess.call(f'rm {files_to_remove}', shell=True, cwd=note_dir)
+    subprocess.call(f'rm -f *.dvi *.ptc *.log *.aux *.toc *.out', shell=True, cwd=note_dir)
 
 def main(argv) -> None:
     """
@@ -80,10 +76,10 @@ def main(argv) -> None:
         my_list = os.listdir('./src')
         for note in my_list:
             build_notes(note)
-            clean_build(note)
+            clean_src(note)
     elif note != '':
         build_notes(note)
-        clean_build(note)
+        clean_src(note)
         print("Notes built.")
 
 if __name__ == "__main__":
