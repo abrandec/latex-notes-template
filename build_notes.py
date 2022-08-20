@@ -13,8 +13,10 @@ def gen_preamble(note) -> None:
     author = ''
     title_latex = r'\n\\title'
     author_latex = '\n\n\\author'
-    if os.path.exists('.cfg'):
-        with open('.cfg', 'r') as f:
+    note_dir = os.path.join('./src', note)
+    cfg_dest = os.path.join(note_dir, '.cfg')
+    if os.path.exists(cfg_dest):
+        with open(cfg_dest, 'r') as f:
             file = f.read()
             title = re.search('(?<=Title: ).*(?=)', file).group(0)
             author = re.search('(?<=Author: ).*(?=)', file).group(0)
@@ -23,7 +25,7 @@ def gen_preamble(note) -> None:
     else:
         print("No .cfg file found.")
         sys.exit()
-    note_dir = os.path.join('./src', note)
+    
     if os.path.exists(f"{note_dir}/preamble.tex"):
         subprocess.call(f"rm {note_dir}/preamble.tex", shell=True)
     subprocess.call(f"cp lib/preamble.tex {note_dir}/preamble.tex", shell=True)

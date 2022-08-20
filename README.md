@@ -14,8 +14,16 @@ $ git clone https://github.com/abrandec/latex-notes-template
 # Go into the repository
 $ cd latex-notes-template
 
-# create a copy the sample_notes in src to start with
+# Create a copy the sample_notes in src to start with
 $ cp -r src/sample_notes src/NOTE_NAME
+```
+
+## Changing Author and Title
+```
+# Go to the notes directory
+$ cd src/NOTE_NAME
+
+# Change the author and title in the cfg file
 ```
 
 ## Compiling Notes
