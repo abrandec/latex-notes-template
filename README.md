@@ -5,7 +5,6 @@ This is a template for creating good looking LaTeX notes quickly.
 ## Dependencies
 - [Python 3.10](https://www.python.org/downloads/release/python-3100/)
 - [pdflatex](https://pypi.org/project/pdflatex/)
-- [latexmk](https://ctan.org/pkg/latexmk/)
 
 ## Getting Started
 ```
