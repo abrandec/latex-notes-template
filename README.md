@@ -1,5 +1,3 @@
-![pdf gen](https://github.com/abrandec/latex-notes-template/actions/workflows/pdf_gen.yml/badge.svg)
-
 # LaTeX Notes Template
 
 Template for creating LaTeX notes.
