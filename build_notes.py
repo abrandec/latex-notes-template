@@ -63,9 +63,9 @@ def main(argv) -> None:
             print('build all notes: build-notes.py -n all')
             sys.exit()
         elif opt in ("-c", "--clean"):
-            if os.path.exists(f'build'):
-                subprocess.call('rm -r build', shell=True)
-                print("path: build removed")
+            for f in os.listdir("build"):
+                if os.path.exists(f"build/{f}/{f}.pdf"):    
+                    subprocess.call(f"rm build/{f}/{f}.pdf", shell=True)
             else:
                 print("path: build does not exist")
         elif opt in ("-n", "--note"):
