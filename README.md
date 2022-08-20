@@ -1,6 +1,8 @@
+![pdf gen](https://github.com/abrandec/latex-notes-template/actions/workflows/pdf_gen.yml/badge.svg)
+
 # LaTeX Notes Template
 
-This is a template for creating good looking LaTeX notes quickly.
+Template for creating LaTeX notes.
 
 ## Dependencies
 - [Python 3.10](https://www.python.org/downloads/release/python-3100/)
