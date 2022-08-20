@@ -21,15 +21,15 @@ $ cp -r src/sample_notes src/NOTE_NAME
 ## Compiling Notes
 ```
 # Compiling a single note
-$ ./build-notes.py -note NOTE_NAME
+$ ./build_notes.py -note NOTE_NAME
 
 # Compiling all notes in the src directory
-$ ./build-notes.py -note all
+$ ./build_notes.py -note all
 ```
 
 ## Cleaning Build Directory
 ```
-$ ./build-notes.py -clean
+$ ./build_notes.py -clean
 ```
 
 ## License
