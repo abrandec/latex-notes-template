@@ -14,8 +14,7 @@ def __build_notes(note) -> None:
     # Build the note.
     subprocess.call('pdflatex master.tex', shell=True, cwd=note_dir) 
     # Move the pdf to the build directory
-    if os.path.exists(os.path.join(note_dir, 'master.pdf')):
-        
+    if os.path.exists(os.path.join(note_dir, 'master.pdf')):     
         if not os.path.exists(f'./build/{note}'):
             os.makedirs(f'./build/{note}')
         if os.path.exists(f'./build/{note}.pdf'):
