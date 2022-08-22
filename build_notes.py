@@ -176,8 +176,8 @@ class Note_Generator:
             temp: str = ''
             for match in matches_l1:
                 temp += match + '\n'
-            declared_theorems = re.findall(r'(?s)(?<={).*?(?=})', temp)
-            for theorem in declared_theorems:
+            self.declared_theorems = re.findall(r'(?s)(?<={).*?(?=})', temp)
+            for theorem in self.declared_theorems:
                 theorem_input = r'\\input{' + theorem + 's.tex}' 
                 try:
                     re.search(theorem_input, main_file).group(0)
@@ -207,9 +207,12 @@ class Note_Generator:
         Clean the build directory.
         :return: None
         """
-        note_dir = os.path.join('./src', self.note)
-        subprocess.call(f'rm -f *.dvi *.ptc *.log *.aux *.toc *.out', shell=True, cwd=note_dir)
-        subprocess.call(f'rm -f preamble.tex main_temp.tex definitions.tex lemmas.tex', shell=True, cwd=note_dir)
+        temp = ''
+        for theorem in self.declared_theorems:
+            theorem = theorem + 's.tex'
+            temp += theorem + ' '
+        subprocess.call(f'rm -f *.dvi *.ptc *.log *.aux *.toc *.out', shell=True, cwd=self.note_dir)
+        subprocess.call(f'rm -f preamble.tex main_temp.tex {temp}', shell=True, cwd=self.note_dir)
 
     def build_notes(self, note) -> None:
         """
