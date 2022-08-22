@@ -50,7 +50,7 @@ class Note_Generator:
         with open(f"{self.note_dir}/main_temp.tex", 'w') as f:
             f.write(file)
     
-    def __get_definitions(self, file) -> list[str]:
+    def __get_definitions(self, file: str, lemma: str) -> list[str]:
         """
         Get the definitions from the latex file.
         :param file: The latex file to get the definitions from.
@@ -61,7 +61,8 @@ class Note_Generator:
             file = f.read()
             matches = None
             try:
-                matches = re.findall(r'(?s)(?<=\\begin{definition}).*?(?=\\end{definition})', file)
+                lemma_re = r'(?s)(?<=\\begin{' + lemma + r'}).*?(?=\\end{' + lemma + r'})'
+                matches = re.findall(lemma_re, file)
             except Exception:
                 print("No definitions for this chapter found.")
             return matches
@@ -86,16 +87,18 @@ class Note_Generator:
             # Sort definitions by alphabetical order.
             matches_comp.sort(key=lambda x: x[2])
 
-    def __craft_definitions_page(self, matches_comp: list) -> None:
+    def __craft_definitions_page(self, matches_comp: list, lemma: str) -> None:
         """
         Craft the definitions page with all the definitions and sections/subsections.
         :param matches_comp: List of matches to append to.
         :param matches_comp: list[str]
         :return: None
         """
-        with open(f"{self.note_dir}/definitions.tex", 'r') as f:
+        with open(f"{self.note_dir}/{lemma}s.tex", 'r') as f:
             file = f.read()
-        file = "\setcounter{chapter}{" + str(self.chapter_counter - 1) + "}\n\chapter{Definitions}\n"
+        lemma_cap = lemma[0].upper() + lemma[1:] + 's'
+        file = "\setcounter{chapter}{" + str(self.chapter_counter - 1) + "}\n\chapter{" + lemma_cap + "}\n"
+        self.chapter_counter += 1
         sections = []
         section_template = '\section{'
         definition_template_0 = '\n\subsection{'
@@ -104,16 +107,16 @@ class Note_Generator:
         # Generate sections alphabetically.
         for match in matches_comp:
             section = section_template + match[2][0] + '}\n'
-            definition = definition_template_0 + match[2] + definition_template_1 + match[1] + definition_template_2 + match[3]
+            definition = definition_template_0 + match[2] + definition_template_1 + match[1] + definition_template_2 + match[2]
             if section not in sections:
                 sections.append(section)
                 file = file + sections[-1] + definition
             else:
                 file = file.replace(section, section + definition)
-        with open(f"{self.note_dir}/definitions.tex", 'w') as f:
+        with open(f"{self.note_dir}/{lemma}s.tex", 'w') as f:
             f.write(file)
-        
-    def __gen_definitions_page(self) -> None:
+
+    def __gen_definitions_page(self, lemma: str) -> None:
         """
         Extract and generate a page with all definitions.
         :return: None
@@ -123,14 +126,38 @@ class Note_Generator:
         # Extract the definitions.
         for f in os.listdir(self.note_dir):
             if re.search(r'(?<=chpt_).*(?=.tex)', f):    
-                matches = self.__get_definitions(f'{self.note_dir}/{f}')
+                matches = self.__get_definitions(f'{self.note_dir}/{f}', lemma)
+                print(matches)
                 self.__parse_definitions(matches, matches_comp)
         # Create the definitions.tex file.
-        if os.path.exists(f"{self.note_dir}/definitions.tex"):
-            subprocess.call(f"rm {self.note_dir}/definitions.tex", shell=True)
-        subprocess.call(f"touch {self.note_dir}/definitions.tex", shell=True)
-        self.__craft_definitions_page(matches_comp)
-        
+        if os.path.exists(f"{self.note_dir}/{lemma}s.tex"):
+            subprocess.call(f"rm {self.note_dir}/{lemma}s.tex", shell=True)
+        subprocess.call(f"touch {self.note_dir}/{lemma}s.tex", shell=True)
+        self.__craft_definitions_page(matches_comp, lemma)
+
+    def __gen_theorem_definition_pages(self) -> None:
+            """
+            Scan main file for theorem imports.
+            :return: None
+            """
+            with open(f"{self.note_dir}/main_temp.tex", 'r') as f:
+                main_file = f.read()
+            with open('lib/preamble.tex', 'r') as f:
+                preamble_file = f.read()
+            f.close()
+            matches_l1 = re.findall(r'(?s)(?<=\\declaretheorem).*?(?=\\)', preamble_file)
+            temp: str = ''
+            for match in matches_l1:
+                temp += match + '\n'
+            declared_theorems = re.findall(r'(?s)(?<={).*?(?=})', temp)
+            for theorem in declared_theorems:
+                theorem_input = r'\\input{' + theorem + 's.tex}' 
+                try:
+                    re.search(theorem_input, main_file).group(0)
+                    self.__gen_definitions_page(theorem)
+                except Exception:
+                    pass
+            
     def __update_chapter_numbers(self) -> None:
         """
         Update the chapter numbers in the note.
@@ -176,11 +203,11 @@ class Note_Generator:
         """
         note_dir = os.path.join('./src', self.note)
         subprocess.call(f'rm -f *.dvi *.ptc *.log *.aux *.toc *.out', shell=True, cwd=note_dir)
-        subprocess.call(f'rm -f preamble.tex main_temp.tex definitions.tex', shell=True, cwd=note_dir)
+        subprocess.call(f'rm -f preamble.tex main_temp.tex definitions.tex lemmas.tex', shell=True, cwd=note_dir)
 
     def build_notes(self, note) -> None:
         """
-        Build the notes twice since LaTeX isn't acting right when creating the Table of Contents.
+        Build the notes
         :param notes: The notes to build.
         :param notes: list
         :return: None
@@ -189,13 +216,8 @@ class Note_Generator:
         self.note_dir = os.path.join('./src', note)
         self.__gen_preamble()
         self.__update_chapter_numbers()
-        with open(f"{self.note_dir}/main_temp.tex", 'r') as f:
-                file = f.read()
-        try:
-            re.search(r'\\input{definitions.tex}', file).group(0)
-            self.__gen_definitions_page()
-        except Exception:
-            pass
+        self.__gen_theorem_definition_pages()
+        # Call __build_notes() twice since Table of Contents isn't added properly the first time with (funny business with pdflatex).
         self.__build_notes()
         self.__build_notes()
         self.__clean_src()
