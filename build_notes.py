@@ -110,7 +110,7 @@ class Note_Generator:
             def_text = re.search(def_text_re, match).group(0)
             matches_comp.append([match, def_hyperref, def_name, def_text])
             # Sort definitions by alphabetical order.
-            matches_comp.sort(key=lambda x: x[2])
+        matches_comp.sort(key=lambda x: x[2])
 
     def __craft_theorem_page(self, matches_comp: list, theorem: str) -> None:
         """
