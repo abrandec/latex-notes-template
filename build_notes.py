@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import os, sys, getopt, re
+from pathlib import Path
 
 class Note_Generator:
     def __init__(self) -> None:
@@ -11,7 +12,7 @@ class Note_Generator:
         # Internal variables.
         self.note_dir = None
         self.note = None
-        self.chapter_counter = 0
+        self.chapter_counter: int = 0
 
     def __gen_preamble(self) -> None:
         """
@@ -33,21 +34,21 @@ class Note_Generator:
         else:
             print("No .cfg file found.")
             sys.exit()
-        if os.path.exists(f"{self.note_dir}/preamble.tex"):
-            subprocess.call(f"rm {self.note_dir}/preamble.tex", shell=True)
-        subprocess.call(f"cp lib/preamble.tex {self.note_dir}/preamble.tex", shell=True)
-        with open(f"{self.note_dir}/preamble.tex", 'a') as f:
-            f.write(f"{author_latex}")
-        if not os.path.exists(f"{self.note_dir}/main.tex"):
-            print(f"{self.note_dir}/main.tex not found.")
+        if os.path.exists(f'{self.note_dir}/preamble.tex'):
+            subprocess.call(f'rm {self.note_dir}/preamble.tex', shell=True)
+        subprocess.call(f'cp lib/preamble.tex {self.note_dir}/preamble.tex', shell=True)
+        with open(f'{self.note_dir}/preamble.tex', 'a') as f:
+            f.write(f'{author_latex}')
+        if not os.path.exists(f'{self.note_dir}/main.tex'):
+            print(f'{self.note_dir}/main.tex not found.')
             sys.exit()
-        if os.path.exists(f"{self.note_dir}/main_temp.tex"):
-            subprocess.call(f"rm {self.note_dir}/main_temp.tex", shell=True)
-        subprocess.call(f"cp {self.note_dir}/main.tex {self.note_dir}/main_temp.tex", shell=True)
-        with open(f"{self.note_dir}/main_temp.tex", 'r') as f:
+        if os.path.exists(f'{self.note_dir}/main_temp.tex'):
+            subprocess.call(f'rm {self.note_dir}/main_temp.tex', shell=True)
+        subprocess.call(f'cp {self.note_dir}/main.tex {self.note_dir}/main_temp.tex', shell=True)
+        with open(f'{self.note_dir}/main_temp.tex', 'r') as f:
             file = f.read()
             file = re.sub('(?:makeatother)', title_latex, file)
-        with open(f"{self.note_dir}/main_temp.tex", 'w') as f:
+        with open(f'{self.note_dir}/main_temp.tex', 'w') as f:
             f.write(file)
             
     def __update_chapter_numbers(self) -> None:
@@ -59,7 +60,8 @@ class Note_Generator:
         for file_name in os.listdir(self.note_dir):
             try:
                 chapter_num = re.search(r'(?<=chpt_).*(?=.tex)', file_name).group(0)
-                replacement_counter = '\setcounter{chapter}{' + chapter_num + '}\n'
+                replacement_counter = '\setcounter{chapter}{' + str(int(chapter_num) - 1) + '}\n'
+                self.chapter_counter += 1
                 if chapter_num == '0':
                     replacement_counter = '\setcounter{chapter}{-1}\n'       
                 with open(f"{self.note_dir}/{file_name}", 'r') as f:
@@ -67,10 +69,9 @@ class Note_Generator:
                 file[0] = replacement_counter
                 with open(f"{self.note_dir}/{file_name}", 'w') as f:
                     f.writelines(file)
-                self.chapter_counter += 1
             except Exception:
                 continue
-
+        
     # Theorem pages generation zone.
     def __get_theorems(self, file: str, theorem: str) -> list[str]:
         """
@@ -88,7 +89,7 @@ class Note_Generator:
                 theorem_re = r'(?s)(?<=\\begin{' + theorem + r'}).*?(?=\\end{' + theorem + r'})'
                 matches = re.findall(theorem_re, file)
             except Exception:
-                print("No definitions for this chapter found.")
+                print('No definitions for this chapter found.')
             return matches
 
     def __parse_theorems(self, matches, matches_comp: list) -> None:
@@ -120,10 +121,10 @@ class Note_Generator:
         :param theorem: str
         :return: None
         """
-        with open(f"{self.note_dir}/{theorem}s.tex", 'r') as f:
+        with open(f'{self.note_dir}/{theorem}s.tex', 'r') as f:
             file = f.read()
         theorem_cap = theorem[0].upper() + theorem[1:] + 's'
-        file = "\setcounter{chapter}{" + str(self.chapter_counter - 1) + "}\n\chapter{" + theorem_cap + "}\n"
+        file = '\setcounter{chapter}{' + str(self.chapter_counter - 1) + '}\n\chapter{' + theorem_cap + '}\n'
         self.chapter_counter += 1
         sections = []
         section_template = '\section{'
@@ -139,7 +140,7 @@ class Note_Generator:
                 file = file + sections[-1] + full_theorem
             else:
                 file = file.replace(section, section + full_theorem)
-        with open(f"{self.note_dir}/{theorem}s.tex", 'w') as f:
+        with open(f'{self.note_dir}/{theorem}s.tex', 'w') as f:
             f.write(file)
 
     def __fill_theorem_page(self, theorem: str) -> None:
@@ -157,9 +158,9 @@ class Note_Generator:
                 matches = self.__get_theorems(f'{self.note_dir}/{f}', theorem)
                 self.__parse_theorems(matches, matches_comp)
         # Create the {theorem}s.tex file.
-        if os.path.exists(f"{self.note_dir}/{theorem}s.tex"):
-            subprocess.call(f"rm {self.note_dir}/{theorem}s.tex", shell=True)
-        subprocess.call(f"touch {self.note_dir}/{theorem}s.tex", shell=True)
+        if os.path.exists(f'{self.note_dir}/{theorem}s.tex'):
+            subprocess.call(f'rm {self.note_dir}/{theorem}s.tex', shell=True)
+        subprocess.call(f'touch {self.note_dir}/{theorem}s.tex', shell=True)
         self.__craft_theorem_page(matches_comp, theorem)
 
     def __gen_theorems_pages(self) -> None:
@@ -167,7 +168,7 @@ class Note_Generator:
             Generate all theorem pages.
             :return: None
             """
-            with open(f"{self.note_dir}/main_temp.tex", 'r') as f:
+            with open(f'{self.note_dir}/main_temp.tex', 'r') as f:
                 main_file = f.read()
             with open('lib/preamble.tex', 'r') as f:
                 preamble_file = f.read()
@@ -184,7 +185,16 @@ class Note_Generator:
                     self.__fill_theorem_page(theorem)
                 except Exception:
                     pass
-    
+            if Path(f'{self.note_dir}/resources.tex').is_file():
+                with open(f'{self.note_dir}/resources.tex', 'r') as f:
+                    file = f.readlines()
+                f.close()
+                file[0] = '\setcounter{chapter}{' + str(self.chapter_counter - 1) + '}\n'
+                self.chapter_counter += 1
+                with open(f'{self.note_dir}/resources.tex', 'w') as f:
+                    f.writelines(file)
+                f.close()
+            
     def __build_notes(self) -> None:
         """
         Build the note.
@@ -201,7 +211,7 @@ class Note_Generator:
             subprocess.call(f'mv main_temp.pdf ../../build/{self.note}', shell=True, cwd=self.note_dir)
             # Rename the pdf to the note name.
             subprocess.call(f'mv build/{self.note}/main_temp.pdf build/{self.note}/{self.note}.pdf', shell=True)
-
+        
     def __clean_src(self) -> None:
         """
         Clean the build directory.
@@ -241,7 +251,7 @@ def main(argv) -> None:
     note_gen = Note_Generator()
     note = ''
     try:
-        opts, _ = getopt.getopt(argv, "h:c:n:", ["help", "clean", "note="])
+        opts, _ = getopt.getopt(argv, 'h:c:n:', ['help', 'clean', 'note='])
     except getopt.GetoptError:
         print('build-notes.py -n <note>')
         sys.exit(2)
@@ -251,13 +261,13 @@ def main(argv) -> None:
             print('clean the build dir: build-notes.py -clean')
             print('build all notes: build-notes.py -n all')
             sys.exit()
-        elif opt in ("-c", "--clean"):
-            for f in os.listdir("build"):
-                if os.path.exists(f"build/{f}/{f}.pdf"):    
-                    subprocess.call(f"rm build/{f}/{f}.pdf", shell=True)
+        elif opt in ('-c', '--clean'):
+            for f in os.listdir('build'):
+                if os.path.exists(f'build/{f}/{f}.pdf'):
+                    subprocess.call(f'rm build/{f}/{f}.pdf', shell=True)
             else:
-                print("path: build does not exist")
-        elif opt in ("-n", "--note"):
+                print('path: build does not exist')
+        elif opt in ('-n', '--note'):
             note = arg
     if note == 'all':
         my_list = os.listdir('./src')
@@ -265,7 +275,7 @@ def main(argv) -> None:
             note_gen.build_notes(note)
     elif note != '':
         note_gen.build_notes(note)
-    print("Notes built.")
+    print('Notes built.')
 
 if __name__ == "__main__":
     main(sys.argv[1:])
